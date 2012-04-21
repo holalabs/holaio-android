@@ -20,7 +20,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.HttpVersion;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -42,7 +41,9 @@ import org.apache.http.protocol.HttpContext;
 
 public class HolaIO {
 	
-	public static final String serverURL = "api.io.holalabs.com";
+	private static final String serverURL = "api.io.holalabs.com";
+	protected HolaIOSingleton singleton;
+	private final String apikey;
 	
 	private final HttpClient httpclient = getNewHttpClient();
 	private final CookieStore cookieStore = new BasicCookieStore();
@@ -53,24 +54,9 @@ public class HolaIO {
     public HolaIO(String key) {
     	// We set the cookiestore so that when authorized, a cookies is saved to do the get requests
     	localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
-    	auth(key);
+    	singleton = HolaIOSingleton.getInstance();
+    	apikey = key;
     }
-	
-	public void auth(String key) {
-        try {
-        	String path = "/login/" + key;
-        	URI getURI = new URI("https", serverURL, path, null);
-        	String authURL = getURI.toASCIIString();
-            HttpGet httpget = new HttpGet(authURL);
-            httpclient.execute(httpget, localContext);
-        } catch (ClientProtocolException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-	}
 	
 	/* @params
 	 * URL: The url without the scheme (http or https)
@@ -78,28 +64,38 @@ public class HolaIO {
 	 * responseHandler: Create a new AsyncResponseHandler and Override the methods onSucceed and onFinish
 	 */
 	public void get(String URL, String Content, AsyncResponseHandler responseHandler) {
-		get(URL, Content, true, responseHandler);
+		get(URL, Content, true, false, responseHandler);
+	}
+	
+	/* @params
+	 * URL: The url without the scheme (http or https)
+	 * Content: A CSS3 selector of the content you want
+	 * Cache: Would you like your request to be cached?
+	 * responseHandler: Create a new AsyncResponseHandler and Override the methods onSucceed and onFinish
+	 */
+	public void get(String URL, String Content, Boolean cache, AsyncResponseHandler responseHandler) {
+		get(URL, Content, true, cache, responseHandler);
 	}
 
 	/* @params
 	 * URL: The url without the scheme (http or https)
 	 * Content: A CSS3 selector of the content you want
 	 * inner: True if you want to get the content's innerHTML and False if you want outerHTML
+	 * Cache: Would you like your request to be cached?
 	 * responseHandler: Create a new AsyncResponseHandler and Override the methods onSucceed and onFinish
 	 */
-	public void get(String URL, String Content, Boolean inner, AsyncResponseHandler responseHandler) {
-		String webURL = URL;
-		String webContent = Content;
+	public void get(String URL, String Content, Boolean inner, Boolean cache, AsyncResponseHandler responseHandler) {
 		String webInner = (inner) ? "inner" : "outer";
 		
 		try {
 			// It prepares the URL
-			String path = "/" + webURL + "/" + webContent + "/" + webInner;
+			String path = "/" + URL + "/" + Content + "/" + webInner;
 			URI getURI = new URI("https", serverURL, path, null);
 			String getURL = getURI.toASCIIString();
 			HttpGet httpget = new HttpGet(getURL);
-			// Does a new AsyncHttpRequest and adds it to the threadpool
-			threadpool.submit(new AsyncHttpRequest(httpclient, localContext, httpget, responseHandler));
+			httpget.setHeader("X-Api-Key", apikey);
+			httpget.setHeader("X-Api-Version", "1.0.0");
+			threadpool.submit(new AsyncHttpRequest(httpclient, localContext, httpget, cache, getURL, responseHandler));
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}

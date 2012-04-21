@@ -32,8 +32,8 @@ public class HolaIODemoActivity extends ListActivity {
 	
 	private void loadList() {
 		// Do a request to google.com asking for the a span content. inner is true by default.
-		// Pass an AsyncResponseHandler with onSuccess() and onFinish()
-		io.get("google.com", "a span", new AsyncResponseHandler() {
+		// Pass an AsyncResponseHandler with onSuccess(), onError() and onFinish()
+		io.get("google.com", "a span", true, new AsyncResponseHandler() {
 			// Parse the content. It gets the array "a span" and each element is transformed to a string and put into an ArrayList
 			@Override
 			public void	onSuccess(JSONObject content) {
@@ -48,6 +48,13 @@ public class HolaIODemoActivity extends ListActivity {
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
+			}
+			
+			// If there's an error during the process
+			@Override
+			public void onError(Throwable e, String response) {
+				menuItems.add("Error:" + e.toString());
+				menuItems.add("Response:" + response);
 			}
 			// After the thread has finished, it updates the UI thread populating the listview
 			@Override
