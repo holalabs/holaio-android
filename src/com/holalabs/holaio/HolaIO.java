@@ -3,6 +3,8 @@ package com.holalabs.holaio;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URI;
+import android.net.Uri;
+
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
@@ -89,9 +91,9 @@ public class HolaIO {
 		
 		try {
 			// It prepares the URL
-			String path = "/" + URL + "/" + Content + "/" + webInner;
+			String path = "/" + encode(URL) + "/" + encode(Content) + "/" + webInner;
 			URI getURI = new URI("https", serverURL, path, null);
-			String getURL = getURI.toASCIIString();
+			String getURL = getURI.toString();
 			HttpGet httpget = new HttpGet(getURL);
 			httpget.setHeader("X-Api-Key", apikey);
 			httpget.setHeader("X-Api-Version", "1.0.0");
@@ -99,6 +101,17 @@ public class HolaIO {
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	// Encode all characters
+	private String encode(String s) {
+		s = Uri.encode(s);
+		s = s.replace("(", "%28");
+	    s = s.replace(")", "%29");
+	    s = s.replace("!", "%21");
+	    s = s.replace("\'", "%27");
+	    s = s.replace("*", "%2A");
+		return s;
 	}
 	
 	// Created a new SSLSocketFactory that trusts websites using SSL even though they don't have a certificate
