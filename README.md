@@ -4,8 +4,7 @@ This API can be used on Android > 2.2
 To use it, you must [download the library](https://github.com/downloads/holalabs/holaio-android/HolaIO.zip),
 put it in your workspace, and import it from Eclipse. After that, you have to go to your project's properties, go to the Android menu and add HolaIO as a library.
 
-You can also check out the [demo app](https://github.com/holalabs/holaio-android/tree/master/Example)
-and download it's [APK](https://github.com/holalabs/holaio-android/HolaIODemo.apk/qr_code)
+You can also check out the [demo app](https://github.com/holalabs/holaio-android/tree/master/Example).
 
 ## Object HolaIO(String APIKey)
 
